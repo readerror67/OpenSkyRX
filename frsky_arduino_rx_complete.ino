@@ -12,13 +12,13 @@
 #include <avr/interrupt.h>
 #include <EEPROM.h>
 #include "iface_cc2500.h"
-//#define DEBUG
-//#define DEBUG0
-//#define DEBUG1
-//#define DEBUG2
-//#define DEBUG3
-//#define DEBUG4
-//#define DEBUG5
+#define DEBUG
+#define DEBUG0
+#define DEBUG1
+#define DEBUG2
+#define DEBUG3
+#define DEBUG4
+#define DEBUG5
 #define FAILSAFE
 #define SPIBB
 //#define SPIHW
@@ -102,7 +102,8 @@ static byte cur_chan_numb = 0;
 boolean debug = false;
 int count = 0;
 uint16_t c[8];
-
+boolean debug2 = true;
+boolean debug3 = false;
 
 void setup()
 {
@@ -381,11 +382,33 @@ void getBind(void)
                     cc2500_readFifo((uint8_t *)ccData, ccLen);
                     if (ccData[ccLen - 1] & 0x80) {
                         if (ccData[2] == 0x01) {
+                          if(debug2) {
+                            //Serial.print(" ccData[2] = ");
+                            //Serial.println(ccData[2]);
+                          }
                             if ((ccData[3] == txid[0]) && (ccData[4] == txid[1])) {
+                              if(debug2) 
+                              {
+                                Serial.print("ccData[5] = ");
+                                Serial.println(ccData[5]);
+                                Serial.print("bindIdx = ");
+                                Serial.println(bindIdx);                      
+                              }
                                 if (ccData[5] == bindIdx) {
                                     for (uint8_t n = 0; n < 5; n++) {
+                                      if(debug3) 
+                                      {
+                                        Serial.print("ccData[6 + n] = ");
+                                        Serial.println(ccData[6 + n]);
+                                        Serial.print("ccData[ccLen - 3] = ");
+                                        Serial.println(ccData[ccLen - 3]);                      
+                                      }
                                         if (ccData[6 + n] == ccData[ccLen - 3]) {
                                             eol = true;
+                                            #if defined(DEBUG)
+                                                Serial.print("listLength: ");
+                                                Serial.println(listLength);
+                                            #endif
                                             listLength = ccData[5] + n;
                                             break;
                                         }
@@ -406,6 +429,8 @@ void getBind(void)
     }
 
     #if defined(DEBUG)
+        listLength = 47;
+        Serial.println("jumpIdx list: ");
         for (uint8_t jumpIdx = 0; jumpIdx < (listLength); jumpIdx++) {
             Serial.print(" ");
             Serial.print(hopData[jumpIdx], HEX);
