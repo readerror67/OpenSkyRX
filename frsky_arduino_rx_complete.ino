@@ -387,7 +387,7 @@ void getBind(void)
                             //Serial.println(ccData[2]);
                           }
                             if ((ccData[3] == txid[0]) && (ccData[4] == txid[1])) {
-                              if(debug2) 
+                              if(debug3) 
                               {
                                 Serial.print("ccData[5] = ");
                                 Serial.println(ccData[5]);
@@ -396,14 +396,15 @@ void getBind(void)
                               }
                                 if (ccData[5] == bindIdx) {
                                     for (uint8_t n = 0; n < 5; n++) {
-                                      if(debug3) 
+                                      if(debug2) 
                                       {
                                         Serial.print("ccData[6 + n] = ");
                                         Serial.println(ccData[6 + n]);
                                         Serial.print("ccData[ccLen - 3] = ");
                                         Serial.println(ccData[ccLen - 3]);                      
                                       }
-                                        if (ccData[6 + n] == ccData[ccLen - 3]) {
+                                        //if (ccData[6 + n] == ccData[ccLen - 3]) {
+                                          if (ccData[6 + n] == 3) {
                                             eol = true;
                                             #if defined(DEBUG)
                                                 Serial.print("listLength: ");
