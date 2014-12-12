@@ -23,13 +23,12 @@
 #define SPIBB
 //#define SPIHW
 #if defined SPIHW
-#include <SPI.h>
+    #include <SPI.h>
 #endif
 
 #define chanel_number 8  //set the number of chanels
 #define SEEK_CHANSKIP   13
 #define MAX_MISSING_PKT 20
-//*****************************************
 #define PPM_FrLen 22500
 #define PPM_PulseLen 300
 #define default_servo_value 1500
@@ -37,40 +36,33 @@
 #define sigPin 10
 
 #if defined(SPIBB)
-#define MO_pin 5 //D5
-#define MI_pin 6//D6
-#define SCLK_pin 4 //D4
-#define CS 2 //D2
-#define GDO_pin 3//D3  GDO0 pin
-//
-#define  SCK_on PORTD |= 0x10//D4
-#define  SCK_off PORTD &= 0xEF//D4
-
-#define  MO_on PORTD |= 0x20  //D5 
-#define  MO_off PORTD &= 0xDF //D5
-//
-#define  MI_1 (PIND & 0x40) == 0x40 //D6 input
-#define  MI_0 (PIND & 0x40) == 0x00 //D6
-//
-#define  CS_on PORTD |= 0x04 //D2
-#define  CS_off PORTD &= 0xFB //D2 
-//
-#define GDO_1 (PIND & 0x08) == 0x08 //D3 input
-#define GDO_0 (PIND & 0x08) == 0x00 //D3  
-//
+    #define MO_pin 5                    //D5
+    #define MI_pin 6                    //D6
+    #define SCLK_pin 4                  //D4
+    #define CS 2                        //D2
+    #define GDO_pin 3                   //D3  GDO0 pin
+    #define SCK_on PORTD |= 0x10        //D4
+    #define SCK_off PORTD &= 0xEF       //D4
+    #define MO_on PORTD |= 0x20         //D5 
+    #define MO_off PORTD &= 0xDF        //D5
+    #define MI_1 (PIND & 0x40) == 0x40  //D6 input
+    #define MI_0 (PIND & 0x40) == 0x00  //D6
+    #define CS_on PORTD |= 0x04         //D2
+    #define CS_off PORTD &= 0xFB        //D2 
+    #define GDO_1 (PIND & 0x08) == 0x08 //D3 input
+    #define GDO_0 (PIND & 0x08) == 0x00 //D3  
 #endif
 
-#define bind_pin A0//C0 bind plug also servo8
-//
-#define Servo1_OUT 7 //Servo1(D7)
-#define Servo2_OUT 8 //Servo2(B0)
-#define Servo3_OUT 9 //Servo3(B1)
-#define Servo4_OUT 10 //Servo4(B2)//PPM pin
-#define Servo5_OUT 11 //Servo5(B3)
-#define Servo6_OUT 12 //Servo6(B4)
-#define Servo7_OUT 13 //Servo7(B5)
-#define Servo8_OUT A0 //Servo8(C0)
-//
+#define bind_pin A0     //C0 bind plug also servo8
+
+#define Servo1_OUT 7    //Servo1(D7)
+#define Servo2_OUT 8    //Servo2(B0)
+#define Servo3_OUT 9    //Servo3(B1)
+#define Servo4_OUT 10   //Servo4(B2)//PPM pin
+#define Servo5_OUT 11   //Servo5(B3)
+#define Servo6_OUT 12   //Servo6(B4)
+#define Servo7_OUT 13   //Servo7(B5)
+#define Servo8_OUT A0   //Servo8(C0)
 
 #define Servo1_OUT_HIGH PORTD |= _BV(7) //Servo1(D7)
 #define Servo2_OUT_HIGH PORTB |= _BV(0) //Servo2(B0)
@@ -78,16 +70,15 @@
 #define Servo4_OUT_HIGH PORTB |= _BV(2) //Servo4(B2)
 #define Servo5_OUT_HIGH PORTB |= _BV(3) //Servo5(B3)
 #define Servo6_OUT_HIGH PORTB |= _BV(4) //Servo6(B4)
-#define Servo7_OUT_HIGH PORTB |= _BV(5)//Servo7(B5) 
+#define Servo7_OUT_HIGH PORTB |= _BV(5) //Servo7(B5) 
 #define Servo8_OUT_HIGH PORTC |= _BV(0) //Servo8(C0)
-//
 #define Servo_Ports_LOW PORTD &= 0x7F ; PORTB &= 0xc0; PORTC &=0xFE //all servos low
-//
+
 #define LED_pin A3
 #define LED_ON  PORTC |= _BV(3)
 #define LED_OFF  PORTC &= ~_BV(3)
 #define NOP() __asm__ __volatile__("nop")
-//*******************************************
+        
 
 // Globals:
 static uint8_t ccData[27];
@@ -112,32 +103,31 @@ boolean debug = false;
 int count = 0;
 uint16_t c[8];
 
-//
+
 void setup()
 {
 
-#if defined(SPIBB)
-    pinMode(MO_pin, OUTPUT);//SI
-    pinMode(MI_pin, INPUT);//SO
-    pinMode(SCLK_pin, OUTPUT);//SCLK
-    pinMode(CS, OUTPUT);//CS output
-    pinMode(GDO_pin, INPUT); //GDO0 pin
-    SCK_off;//start sck low
-    MO_off;//low
-#endif
-    //
+    #if defined(SPIBB)
+        pinMode(MO_pin, OUTPUT);    //SI
+        pinMode(MI_pin, INPUT);     //SO
+        pinMode(SCLK_pin, OUTPUT);  //SCLK
+        pinMode(CS, OUTPUT);        //CS output
+        pinMode(GDO_pin, INPUT);    //GDO0 pin
+        SCK_off;                    //start sck low
+        MO_off;                     //low
+    #endif
+    
     pinMode(LED_pin, OUTPUT);
     CS_on;
-    //
-#if defined(SPIHW)
-    pinMode(CS, OUTPUT);
-    pinMode(GDO_pin, INPUT);
-    //
-    SPI.setClockDivider(SPI_CLOCK_DIV2);
-    SPI.setBitOrder( MSBFIRST);
-    SPI.begin();
-#endif
-    //
+
+    #if defined(SPIHW)
+        pinMode(CS, OUTPUT);
+        pinMode(GDO_pin, INPUT);
+        SPI.setClockDivider(SPI_CLOCK_DIV2);
+        SPI.setBitOrder( MSBFIRST);
+        SPI.begin();
+    #endif
+
     pinMode(Servo1_OUT, OUTPUT); //Servo1
     pinMode(Servo2_OUT, OUTPUT); //Servo2
     pinMode(Servo3_OUT, OUTPUT); //Servo3
@@ -147,34 +137,36 @@ void setup()
     pinMode(Servo7_OUT, OUTPUT); //Servo7
     pinMode(Servo8_OUT, OUTPUT); //Servo8
     //Servo8_OUT_HIGH;//bindpin pullup
-    //
-#if defined DEBUG
-    Serial.begin(115200);
-    int8_t i;
-    Serial.print("PartNum ");
-    i = cc2500_readReg(CC2500_30_PARTNUM + CC2500_READ_BURST);
-    Serial.println(i);
-    delay(10);
-    Serial.print("Version ");
-    i = cc2500_readReg(CC2500_31_VERSION + CC2500_READ_BURST);
-    Serial.println(i);
-#endif
-    //
-#if F_CPU == 16000000
-    scale = 2;
-#elif F_CPU == 8000000
-    scale = 1;
-#else
-#error // 8 or 16MHz only !
-#endif
-    //
-    initialize(1);//binding
+
+    #if defined DEBUG
+        Serial.begin(115200);
+        int8_t i;
+        Serial.print("PartNum ");
+        i = cc2500_readReg(CC2500_30_PARTNUM + CC2500_READ_BURST);
+        Serial.println(i);
+        delay(10);
+        Serial.print("Version ");
+        i = cc2500_readReg(CC2500_31_VERSION + CC2500_READ_BURST);
+        Serial.println(i);
+    #endif
+    
+    #if F_CPU == 16000000
+        scale = 2;
+    #elif F_CPU == 8000000
+        scale = 1;
+    #else
+        #error // 8 or 16MHz only !
+    #endif
+
+
+
+    initialize(1);                  //binding
     binding();
-    pinMode(Servo8_OUT, OUTPUT); //Servo8.bind pin is set to output again.
-    initialize(0);//data
-    //
+    pinMode(Servo8_OUT, OUTPUT);    //Servo8.bind pin is set to output again.
+    initialize(0);                  //data
+    
     jumper1 = PPM_jumper(); // Check the possible jumper positions for changing the receiver mode.
-    //
+    
     if (jumper1 == 1) {
         //initiallize default ppm values
         for (int i = 0; i < chanel_number; i++) {
@@ -184,7 +176,6 @@ void setup()
         digitalWrite(sigPin, !onState);  //set the PPM signal pin to the default state (off)
     }
     config_timer();
-    //
     channr = 0;
     cc2500_writeReg(CC2500_0A_CHANNR, hopData[channr]);//0A-hop
     cc2500_writeReg(CC2500_23_FSCAL3, 0x89); //23-89
@@ -196,25 +187,27 @@ void setup()
 void loop()
 {
     unsigned long time = micros();
-#if defined(FAILSAFE)
-    if (missingPackets > 170) {
-        //**************************************
-        //noInterrupts();//
-        //digitalWrite(sigPin, LOW);
-        //Servo_Ports_LOW;
-        //**********************************************
-        missingPackets = 0;
-        int i;
-        for (i = 0; i < 8; i++) {
-            Servo_data[i] = 1500;
-            ppm[i] = 1500;
-            if (i == 2) {
-                Servo_data[2] = 1000; //THROTLE ON CHN3 here it can be changed Throttle on other channel
-                ppm[2] = 1000;
+
+    #if defined(FAILSAFE)
+        if (missingPackets > 170) {
+            //**************************************
+            //noInterrupts();//
+            //digitalWrite(sigPin, LOW);
+            //Servo_Ports_LOW;
+            //**********************************************
+            missingPackets = 0;
+            int i;
+            for (i = 0; i < 8; i++) {
+                Servo_data[i] = 1500;
+                ppm[i] = 1500;
+                if (i == 2) {
+                    Servo_data[2] = 1000; //THROTLE ON CHN3 here it can be changed Throttle on other channel
+                    ppm[2] = 1000;
+                }
             }
         }
-    }
-#endif
+    #endif
+
     while (1) {
         if ((micros() - time) > 9000) {
             missingPackets++;
@@ -278,25 +271,25 @@ void loop()
             }
             ppm[i] = Servo_data[i];
         }
-#if defined(DEBUG5)
-        //Serial.println(rssi);
-#endif
-#if defined(DEBUG0)
-        for (int i = 0; i < 8; i++) {
-            Serial.print(" ");
-            Serial.print(Servo_data[i]);
-            Serial.print(" ");
-        }
-        Serial.println(" ");
-#endif
+        #if defined(DEBUG5)
+                //Serial.println(rssi);
+        #endif
+        #if defined(DEBUG0)
+                for (int i = 0; i < 8; i++) {
+                    Serial.print(" ");
+                    Serial.print(Servo_data[i]);
+                    Serial.print(" ");
+                }
+                Serial.println(" ");
+        #endif
     }
-    //
+
     cc2500_strobe(CC2500_SRX);
     if (debug == true) {
         debug = false;
-#if defined(DEBUG2)
-        Serial.println(ccData[3], HEX);
-#endif
+        #if defined(DEBUG2)
+                Serial.println(ccData[3], HEX);
+        #endif
     }
 }
 
@@ -338,7 +331,6 @@ void initialize(int bind)
     cc2500_writeReg(CC2500_03_FIFOTHR,  0x0F);  // reg 0x03:
     cc2500_writeReg(CC2500_09_ADDR, bind ? 0x03 : txid[0]);
     cc2500_strobe(CC2500_SIDLE);    // Go to idle...
-
     cc2500_writeReg(CC2500_07_PKTCTRL1, 0x0D);  // reg 0x07 hack: Append status, filter by address, auto-flush on bad crc, PQT=0
     //cc2500_writeReg(CC2500_0C_FSCTRL0, 0);    // Frequency offset...
     cc2500_writeReg(CC2500_0C_FSCTRL0, bind ? 0x00 : count); // Frequency offset hack
@@ -376,10 +368,11 @@ void getBind(void)
         }
     }
 
-#if defined(DEBUG)
-    Serial.print(txid[0], HEX);
-    Serial.println(txid[1], HEX);
-#endif
+    #if defined(DEBUG)
+        Serial.print(txid[0], HEX);
+        Serial.println(txid[1], HEX);
+    #endif
+
     for (uint8_t bindIdx = 0x05; bindIdx <= 120; bindIdx += 5) {
         while (1) {
             if (GDO_1) {
@@ -406,19 +399,21 @@ void getBind(void)
                 }
             }
         }
-#if defined(DEBUG)
-        Serial.println(bindIdx / 5);
-#endif
+        #if defined(DEBUG)
+                Serial.println(bindIdx / 5);
+        #endif
         if (eol) break; // End of list found, stop!
     }
-#if defined(DEBUG)
-    for (uint8_t jumpIdx = 0; jumpIdx < (listLength); jumpIdx++) {
-        Serial.print(" ");
-        Serial.print(hopData[jumpIdx], HEX);
-        Serial.print(" ");
-    }
-    Serial.println(" ");
-#endif
+
+    #if defined(DEBUG)
+        for (uint8_t jumpIdx = 0; jumpIdx < (listLength); jumpIdx++) {
+            Serial.print(" ");
+            Serial.print(hopData[jumpIdx], HEX);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    #endif
+
     Store_bind();
     cc2500_strobe(CC2500_SIDLE);    // Back to idle
 }
@@ -430,7 +425,7 @@ ISR(TIMER1_COMPA_vect)
         pinMode(Servo5_OUT, OUTPUT);
         Servo_Ports_LOW;
         //code for servo.
-        cur_chan_numb++;//next servo
+        cur_chan_numb++; //next servo
         if (cur_chan_numb < chanel_number) {
             total_servo_time += Servo_data[cur_chan_numb] * scale;
             OCR1A = Servo_data[cur_chan_numb] * scale;
@@ -580,9 +575,9 @@ void tunning()
             }
         }
     }
-#if defined(DEBUG1)
-    Serial.println(count, HEX);
-#endif
+    #if defined(DEBUG1)
+        Serial.println(count, HEX);
+    #endif
 }
 
 
