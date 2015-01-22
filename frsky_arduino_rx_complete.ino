@@ -19,7 +19,7 @@
 //#define DEBUG3
 //#define DEBUG4
 //#define DEBUG5
-//#define FAILSAFE
+#define FAILSAFE
 #define SPIBB
 //#define SPIHW
 #if defined SPIHW
@@ -32,7 +32,7 @@
 #define PPM_FrLen 22500
 #define PPM_PulseLen 300
 #define default_servo_value 1500
-#define onState 1  //set polarity of the pulses: 1 is positive, 0 is negative
+#define onState 0  //set polarity of the pulses: 1 is positive, 0 is negative
 #define sigPin 10
 
 #if defined(SPIBB)
@@ -199,8 +199,8 @@ void loop()
             missingPackets = 0;
             int i;
             for (i = 0; i < 8; i++) {
-                Servo_data[i] = 1500;
-                ppm[i] = 1500;
+                Servo_data[i] = 1000;
+                ppm[i] = 1000;
                 if (i == 2) {
                     Servo_data[2] = 1000; //THROTLE ON CHN3 here it can be changed Throttle on other channel
                     ppm[2] = 1000;
