@@ -547,6 +547,11 @@ void binding()
             for (i = 0; i < 2; i++) {
                 txid[i] = EEPROM.read(adr + i);
             }
+            if (txid[0] == 0xff && txid[1] == 0xff) {
+                // No valid txid, forcing bind
+                jumper2 = 1;
+                continue;
+            }
             for (i = 0; i < sizeof(hopData); i++) {
                 hopData[i] = EEPROM.read(adr + 10 + i);
             }
