@@ -19,12 +19,19 @@
 //#define DEBUG3
 //#define DEBUG4
 //#define DEBUG5
+//#define RSSI_OVER_PPM 7
+
 #define FAILSAFE
 #define SPIBB
 //#define SPIHW
 #if defined SPIHW
     #include <SPI.h>
 #endif
+
+// Used for RSSI_OVER_PPM
+int rssi;
+int rssi_min = -114;
+int rssi_max = -79;
 
 #define chanel_number 8  //set the number of chanels
 #define SEEK_CHANSKIP   13
@@ -183,7 +190,30 @@ void setup()
     cc2500_strobe(CC2500_SRX);
 }
 
-
+void updateRSSI() {
+#if defined(RSSI_OVER_PPM)
+    rssi = cc2500_readReg(CC2500_34_RSSI | CC2500_READ_BURST);
+    if (rssi < 128) {
+        rssi = ((rssi / 2) - 74) & 0x7f;
+    } else {
+        rssi = (((rssi - 256) / 2)) - 74;
+    }
+    int old_rssi_min = rssi_min;
+    int old_rssi_max = rssi_max;
+    rssi_min = min(rssi_min, rssi);
+    rssi_max = max(rssi_max, rssi);
+  #if defined(DEBUG)
+    if (rssi_min != old_rssi_min || rssi_max != old_rssi_max) {
+        Serial.print("RSSI: ");
+        Serial.print(rssi);
+        Serial.print(", min=");
+        Serial.print(rssi_min);
+        Serial.print(", max=");
+        Serial.println(rssi_max);
+    }
+  #endif
+#endif
+}
 
 void loop()
 {
@@ -237,7 +267,7 @@ void loop()
                         if ((ccData[1] == txid[0]) && (ccData[2] == txid[1])) { // Only if correct txid
                             packet = true;
                             //sei();    ///////////////////////////////////////////////////////////////////////////////////////
-                            //int rssi = cc2500_readReg(CC2500_34_RSSI | CC2500_READ_BURST);//check RSSI
+                            updateRSSI();
                             cc2500_strobe(CC2500_SIDLE);
                             nextChannel(1);
                             LED_ON;
@@ -272,6 +302,9 @@ void loop()
             }
             ppm[i] = Servo_data[i];
         }
+        #if defined(RSSI_OVER_PPM)
+          ppm[RSSI_OVER_PPM] = map(rssi, rssi_min, rssi_max, 1000, 2000);
+        #endif
         #if defined(DEBUG5)
                 //Serial.println(rssi);
         #endif
