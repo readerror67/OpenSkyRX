@@ -13,6 +13,7 @@
 #include <EEPROM.h>
 #include "iface_cc2500.h"
 //#define DEBUG
+//#define DEBUG_RSSI
 //#define DEBUG0
 //#define DEBUG1
 //#define DEBUG2
@@ -30,8 +31,9 @@
 
 // Used for RSSI_OVER_PPM
 int rssi;
-int rssi_min = -114;
-int rssi_max = -79;
+const int rssi_offset = 71;
+const int rssi_min = -103;
+const int rssi_max = -96;
 
 #define chanel_number 8  //set the number of chanels
 #define SEEK_CHANSKIP   13
@@ -192,26 +194,20 @@ void setup()
 
 void updateRSSI() {
 #if defined(RSSI_OVER_PPM)
-    rssi = cc2500_readReg(CC2500_34_RSSI | CC2500_READ_BURST);
-    if (rssi < 128) {
-        rssi = ((rssi / 2) - 74) & 0x7f;
+    int rssi_dec = cc2500_readReg(CC2500_34_RSSI | CC2500_READ_BURST);
+    if (rssi_dec < 128) {
+        rssi = ((rssi_dec / 2) - rssi_offset) & 0x7f;
     } else {
-        rssi = (((rssi - 256) / 2)) - 74;
+        rssi = (((rssi_dec - 256) / 2)) - rssi_offset;
     }
-    int old_rssi_min = rssi_min;
-    int old_rssi_max = rssi_max;
-    rssi_min = min(rssi_min, rssi);
-    rssi_max = max(rssi_max, rssi);
-  #if defined(DEBUG)
-    if (rssi_min != old_rssi_min || rssi_max != old_rssi_max) {
-        Serial.print("RSSI: ");
-        Serial.print(rssi);
-        Serial.print(", min=");
-        Serial.print(rssi_min);
-        Serial.print(", max=");
-        Serial.println(rssi_max);
-    }
+
+  #if defined(DEBUG_RSSI2)
+    Serial.print(millis());
+    Serial.print("\t");
+    Serial.println(rssi);
   #endif
+
+    rssi = constrain(rssi, rssi_min, rssi_max);
 #endif
 }
 
