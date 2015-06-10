@@ -38,6 +38,7 @@ const int rssi_max = -96;
 #define chanel_number 8  //set the number of chanels
 #define SEEK_CHANSKIP   13
 #define MAX_MISSING_PKT 20
+#define FAILSAFE_MISSING_PKT 170
 #define PPM_FrLen 22500
 #define PPM_PulseLen 300
 #define default_servo_value 1500
@@ -106,6 +107,7 @@ volatile byte scale;
 static byte jumper1 = 0;
 static byte jumper2 = 0;
 volatile int ppm[chanel_number];
+volatile bool failed = false;
 static uint16_t total_servo_time = 0;
 static byte cur_chan_numb = 0;
 boolean debug = false;
@@ -216,18 +218,9 @@ void loop()
     unsigned long time = micros();
 
     #if defined(FAILSAFE)
-        if (missingPackets > 170) {
-            //**************************************
-            //noInterrupts();//
-            //digitalWrite(sigPin, LOW);
-            //Servo_Ports_LOW;
-            //**********************************************
+        if (missingPackets > FAILSAFE_MISSING_PKT) {
+            failed = true;
             missingPackets = 0;
-            int i;
-            for (i = 0; i < 8; i++) {
-                Servo_data[i] = 1000;
-                ppm[i] = 1000;
-            }
         }
     #endif
 
@@ -263,6 +256,7 @@ void loop()
                             cc2500_strobe(CC2500_SIDLE);
                             nextChannel(1);
                             LED_ON;
+                            failed = false;
                             break;
                         }
                     }
@@ -471,6 +465,11 @@ void getBind(void)
 
 ISR(TIMER1_COMPA_vect)
 {
+    if (failed) {
+        digitalWrite(sigPin, HIGH);
+        return;
+    }
+
     TCNT1 = 0;
     if (jumper1 == 0) {
         pinMode(Servo5_OUT, OUTPUT);
