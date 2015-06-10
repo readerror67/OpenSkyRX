@@ -227,10 +227,6 @@ void loop()
             for (i = 0; i < 8; i++) {
                 Servo_data[i] = 1000;
                 ppm[i] = 1000;
-                if (i == 2) {
-                    Servo_data[2] = 1000; //THROTLE ON CHN3 here it can be changed Throttle on other channel
-                    ppm[2] = 1000;
-                }
             }
         }
     #endif
